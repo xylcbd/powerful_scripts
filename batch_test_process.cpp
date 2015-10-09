@@ -19,18 +19,18 @@ struct TEST_RESULT
 	//output
 	size_t processed = 0;
 };
-void thread_cb(int thread_id, TEST_RESULT& result)
+void thread_cb(int thread_id, TEST_RESULT* result)
 {
 	auto lock_and_action = [&](function<void()> action_cb){
-		lock_guard<std::mutex> locker(*result.mtx);
+		lock_guard<std::mutex> locker(*result->mtx);
 		action_cb();
 	};
-	lock_and_action([&](){cout << "thread[" << thread_id << "] begin , process size is " << result.images.size() << endl; });
+	lock_and_action([&](){cout << "thread[" << thread_id << "] begin , process size is " << result->images.size() << endl; });
 	auto fetch_task = [&]()->string{
-		lock_guard<std::mutex> locker(*result.mtx);
-		if (result.processed < result.images.size())
+		lock_guard<std::mutex> locker(*result->mtx);
+		if (result->processed < result->images.size())
 		{
-			return result.images[result.processed++];
+			return result->images[result->processed++];
 		}
 		else
 		{
@@ -41,7 +41,7 @@ void thread_cb(int thread_id, TEST_RESULT& result)
 	{
 		lock_and_action([&](){
 			//global progress
-			cout << "global progress = " << (result.processed + 1) << "/" << result.images.size() << endl;
+			cout << "global progress = " << (result->processed + 1) << "/" << result->images.size() << endl;
 		});
 		const string filepath = fetch_task();
 		if (filepath.empty())
@@ -72,7 +72,7 @@ void batch_test(const vector<string>& images, int threadNum = 4)
 	result.images = images;
 	for (int i = 0; i < threadNum; i++)
 	{
-		threads.push_back(std::thread(thread_cb, i, result));
+		threads.push_back(std::thread(thread_cb, i, &result));
 	}
 	for (size_t i = 0; i < threads.size(); i++)
 	{
