@@ -8,6 +8,7 @@
 #include <thread>
 #include <mutex>
 #include <memory>
+#include <algorithm>
 
 using namespace std;
 
@@ -83,7 +84,8 @@ void batch_test(const vector<string>& images, int threadNum = 4)
 
 int main(int argc, char* argv[])
 {
-	const auto testImages = vector<string>{"1.jpg","2.jpg"};
+	auto testImages = vector<string>{"1.jpg","2.jpg"};
+	std::random_shuffle(testImages.begin(), testImages.end());
 	batch_test(testImages);
 	return 0;
 }
